@@ -308,6 +308,7 @@ def update
     music()
     # Verifica se qualquer tecla ou botão foi pressionado para reiniciar
     if keyp(50) || btnp(4)
+      $velocidade = 1
       $menu = true
       $game_over = false
       $game_win = false
