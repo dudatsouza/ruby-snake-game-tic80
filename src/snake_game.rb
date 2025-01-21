@@ -11,6 +11,8 @@ $option_category = 0 # Categoria de opções
 $option_index_fruits = 0 # Índice da opção de frutas
 $option_index_size = 0 # Índice da opção de tamanho
 $menu_cooldown = 0  # Controla a sensibilidade da navegação
+$velocidade = 1 # Guarda o valor da velocidade do jogo para mostrar ao jogador
+$comecou = false # Define se o jogo já começou
 
 # Constantes globais para dimensões da malha
 $grid_width  = 28
@@ -291,7 +293,7 @@ def menu_draw
   # Desenhar o botão de confirmação
   desenha_botao($botao_confirmar)
 
-  $t = ($t + 1) % 360  # Incrementa o contador de tempo para animação
+  $t = ($t + 1) % 360  # Incrementa o contador de tempo para animação  
 end
 
 def desenha_botao(botao)
@@ -303,6 +305,7 @@ end
 
 def update
   if $game_over || $game_win  
+    music()
     # Verifica se qualquer tecla ou botão foi pressionado para reiniciar
     if keyp(50) || btnp(4)
       $menu = true
@@ -316,7 +319,7 @@ def update
 
   unless $game_started
     # Verifica se o jogo deve iniciar
-    if btnp(0) || btnp(1) || btnp(2) || btnp(3) || keyp(50) || btnp(4)
+    if btnp(0) || btnp(1) || btnp(2) || btnp(3) || keyp(50) || btnp(4)  
       $game_started = true
     end
     return unless $game_started  # Não continua se o jogo ainda não começou
@@ -349,9 +352,10 @@ def adjust_speed
   $score ||= 0
 
   # Reduz o speed_factor quando o score ultrapassa múltiplos de 20, até um mínimo de 4
-  if $score >= $last_speed_update + 20
+  if $score >= $last_speed_update + 15
+    $velocidade += 1
     $speed_factor = [4, $speed_factor - 1].max
-    $last_speed_update += 20
+    $last_speed_update += 15
   end
 end
 
@@ -361,10 +365,14 @@ def move_snake
   # Verifica se a cabeça da cobra ultrapassou as bordas da malha
   if head[0] < 0 || head[0] >= $grid_width  || head[1] < 0 || head[1] >= $grid_height
     $game_over = true
+    music()
+    $comecou = false
+    sfx(4, 25)
     return  # Para a execução da função se a cobra atingir as bordas
   end
 
   if $foods.include?(head)
+    sfx(1, 38)
     $snake.unshift(head)
     $foods.delete(head)  # Remove a maçã comida
     $score += 1      # Incrementa o score em 1 ponto
@@ -390,12 +398,18 @@ def check_collision
   head = $snake[0]
   if $snake[1..-1].include?(head)
     $game_over = true
+    music()
+    $comecou = false
+    sfx(4, 25)
   end
 end
 
 def check_win
   if $score == $grid_width  * $grid_height - $food_count - 2
     $game_win = true
+    music()
+    $comecou = false
+    sfx(4, 56)
   end
 end
 
@@ -531,7 +545,6 @@ def draw
     x_title = (240 - title.length * 6 * scale) / 2
     y_title = 30
     print(title, x_title, y_title, color, false, scale)
-    music()
     
     # Botão "Reiniciar"
     button_text = "REINICIAR"
@@ -543,26 +556,31 @@ def draw
     # Desenhar o botão
     rect(button_x, button_y, button_width, button_height, 12)  # Fundo azul
     print(button_text, button_x + 5, button_y + 4, 15)  # Texto branco
-    music()
 
     # Armazena as dimensões do botão para interação
     $restart_button = { x: button_x, y: button_y, w: button_width, h: button_height }
-
+    
     $t = ($t + 1) % 360
   end
   
   # Exibe o score
   print("SCORE: #{$score}", 8, 0, 12)
+  # Exibe a velocidade atual
+  print("VELOCIDADE: #{$velocidade}", 162, 0, 12) 
 end
 
 def TIC
   if $menu
     menu_update
+    music(0, 0, 0, true) if $comecou
+    $comecou = false unless !$comecou
     menu_draw
   else
     update
+    music(1, 0, 0, true) if !$comecou
+    $comecou = true unless $comecou
     draw
   end
 end
 
-music(0, 0, 0, true)  # Inicia a música de fundo
+music(0, 0, 0, true)
