@@ -133,7 +133,7 @@ def menu_update
     when 1 then $food_count = 3
     when 2 then $food_count = 5
     when 3
-      $food_count = 1 + rand(10)
+      $food_count = 1 + rand(9)
     end
     
     srand(Time.now.to_i) 
@@ -566,7 +566,7 @@ def draw
   # Exibe o score
   print("SCORE: #{$score}", 8, 0, 12)
   # Exibe a velocidade atual
-  print("VELOCIDADE: #{$velocidade}", 162, 0, 12) 
+  print("VELOCIDADE: #{$velocidade}x", 162, 0, 12) 
 end
 
 def TIC
